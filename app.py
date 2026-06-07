@@ -288,15 +288,17 @@ else:
         st.subheader("📋 Today's Timeline")
         events = []
         for m in meals:
-            events.append((m["timestamp"], f"🍽️ {m['description']}", m["kcal"]))
+            events.append((m["timestamp"], f"🍽️ {m['description']}", m["kcal"], m["id"], "meals"))
         for w in workouts:
-            events.append((w["timestamp"], f"🏃 {w['activity_type']}", -w["kcal_burned"]))
+            events.append((w["timestamp"], f"🏃 {w['activity_type']}", -w["kcal_burned"], w["id"], "workouts"))
         events.sort(key=lambda x: x[0], reverse=True)
-        for ts, desc, kcal in events[:10]:
+        for ts, desc, kcal, rec_id, table in events[:10]:
             col1, col2 = st.columns([5, 1])
             col1.write(f"{desc}: {'+' if kcal > 0 else ''}{kcal} kcal")
-            if col2.button("🗑️", key=f"del_{ts}"):
-                st.warning("Delete feature coming soon!")
+            if col2.button("🗑️", key=f"del_{rec_id}"):
+                supabase.table(table).delete().eq("id", rec_id).execute()
+                st.success("Deleted!")
+                st.rerun()
         if not events:
             st.info("No meals or workouts logged today.")
         st.subheader("➕ Quick Add")
