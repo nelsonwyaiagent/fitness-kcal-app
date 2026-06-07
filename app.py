@@ -375,7 +375,7 @@ else:
                         {"role": "system", "content": "You are a helpful fitness coach. Give practical advice about meals, workouts, and nutrition."},
                         {"role": "user", "content": f"User data: {eaten} kcal eaten, {burned} burned, target {target} kcal. Question: {query}"}
                     ],
-                    max_tokens=300
+                    max_tokens=500
                 )
                 response = ai_response.choices[0].message.content
             except Exception as e:
