@@ -111,7 +111,7 @@ def analyze_text_meal(description: str) -> dict:
     try:
         from openai import OpenAI
         client = OpenAI(
-            api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+            api_key=os.environ.get("MINIMAX_API_KEY", ""),
             base_url="https://api.minimax.io/v1"
         )
         response = client.chat.completions.create(
@@ -150,7 +150,7 @@ def analyze_meal_image(image_bytes: bytes) -> dict:
     image_b64 = base64.b64encode(image_bytes).decode()
     try:
         client = OpenAI(
-            api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+            api_key=os.environ.get("MINIMAX_API_KEY", ""),
             base_url="https://api.minimax.io/v1"
         )
         response = client.chat.completions.create(
@@ -346,7 +346,7 @@ else:
             try:
                 from openai import OpenAI
                 client = OpenAI(
-                    api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+                    api_key=os.environ.get("MINIMAX_API_KEY", ""),
                     base_url="https://api.minimax.io/v1"
                 )
                 ai_response = client.chat.completions.create(
