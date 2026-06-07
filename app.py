@@ -145,6 +145,7 @@ def analyze_text_meal(description: str) -> dict:
         return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
 
 def analyze_meal_image(image_bytes: bytes) -> dict:
+    from openai import OpenAI
     import base64
     image_b64 = base64.b64encode(image_bytes).decode()
     try:
