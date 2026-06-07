@@ -15,50 +15,59 @@ except:
     from openai import OpenAI
 
 def create_kcal_rings(eaten: int, burned: int, target: int):
-    """Create concentric donut rings for kcal display"""
+    """Create donut chart for kcal display"""
     from plotly import graph_objects as go
     
     # Calculate values
-    remaining = max(0, target - eaten + burned)
+    net = eaten - burned
+    remaining = max(0, target - net)
+    over = max(0, net - target)
     
-    # Inner ring (Eaten) - full circle
+    # Outer ring: Remaining + Burned
+    if burned > 0:
+        outer_labels = ['Budget Left', 'Burned']
+        outer_values = [remaining, burned]
+        outer_colors = ['#10b981', '#3b82f6']  # green, blue
+    else:
+        outer_labels = ['Budget Left']
+        outer_values = [remaining]
+        outer_colors = ['#10b981']
+    
+    # Inner ring: Eaten
+    inner_labels = ['Eaten']
     inner_values = [eaten]
-    
-    # Outer ring - split into remaining and burned
-    outer_values = [remaining, burned]
-    outer_colors = ['#10b981', '#3b82f6']  # green for remaining, blue for burned
+    inner_colors = ['#f59e0b']  # amber
     
     fig = go.Figure()
     
-    # Outer ring (background + burned)
-    fig.add_trace(go.Barpolar(
-        r=outer_values,
-        theta=[0, 0],
-        marker=dict(color=outer_colors),
+    # Outer donut
+    fig.add_trace(go.Pie(
+        values=outer_values,
+        labels=outer_labels,
+        marker=dict(colors=outer_colors),
+        hole=0.6,
         name='Budget',
-        baseangle=0,
-        opacity=0.7
+        direction='clockwise',
+        sort=False
     ))
     
-    # Inner ring (eaten) - overlay
-    fig.add_trace(go.Barpolar(
-        r=[eaten],
-        theta=[180],
-        marker=dict(color=['#f59e0b']),  # amber for eaten
+    # Inner donut
+    fig.add_trace(go.Pie(
+        values=inner_values,
+        labels=inner_labels,
+        marker=dict(colors=inner_colors),
+        hole=0.4,
         name='Eaten',
-        baseangle=180,
-        hole=0.6
+        direction='clockwise',
+        sort=False
     ))
     
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=False),
-            angularaxis=dict(visible=False)
-        ),
         showlegend=True,
         legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
         margin=dict(t=20, b=20, l=20, r=20),
-        height=300
+        height=350,
+        annotations=[dict(text=f'{eaten}', font=dict(size=20), showarrow=False, x=0.5, y=0.5)]
     )
     
     return fig
