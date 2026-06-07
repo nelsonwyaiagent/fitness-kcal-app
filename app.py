@@ -2,8 +2,16 @@ import streamlit as st
 import supabase
 import requests
 import json
+import os
 from datetime import datetime, timedelta
 from plotly import graph_objects as go
+
+# Use OpenAI client for MiniMax
+try:
+    from openai import OpenAI
+except:
+    os.system("pip install openai")
+    from openai import OpenAI
 
 # Page config
 st.set_page_config(page_title="Fitness Kcal App", page_icon="💪", layout="wide")
@@ -103,17 +111,24 @@ def analyze_meal_image(image_bytes: bytes) -> dict:
     import base64
     image_b64 = base64.b64encode(image_bytes).decode()
     try:
-        response = requests.post(
-            "https://api.minimax.chat/v1/text/chatcompletion_v2",
-            headers={"Authorization": f"Bearer {st.secrets['MINIMAX_API_KEY']}", "Content-Type": "application/json"},
-            json={"model": "MiniMax-M2.5", "messages": [{"role": "user", "content": [{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}}, {"type": "text", "text": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat. No markdown."}]}]}
+        client = OpenAI(
+            api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+            base_url="https://api.minimax.io/v1"
         )
-        data = response.json()
-        content = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        response = client.chat.completions.create(
+            model="MiniMax-M2.7",
+            messages=[{"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
+                {"type": "text", "text": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat. No markdown."}
+            ]}],
+            max_tokens=500
+        )
+        content = response.choices[0].message.content
         import re
         json_match = re.search(r'\{[\s\S]*\}', content)
         return json.loads(json_match.group()) if json_match else {}
-    except:
+    except Exception as e:
+        st.error(f"AI Error: {e}")
         return {}
 
 # Auth check
