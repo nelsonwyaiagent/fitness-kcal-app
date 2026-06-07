@@ -41,7 +41,7 @@ page = st.sidebar.radio("Navigate", ["Today", "Plan", "Chat", "Profile"])
 
 def sign_in(email: str, password: str):
     try:
-        response = supabase.auth.sign_in_with_password(email=email, password=password)
+        response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response.user:
             st.session_state.user_id = response.user.id
             st.session_state.logged_in = True
@@ -55,7 +55,7 @@ def sign_in(email: str, password: str):
 
 def sign_up(email: str, password: str):
     try:
-        response = supabase.auth.sign_up(email=email, password=password)
+        response = supabase.auth.sign_up({"email": email, "password": password})
         # After signup, try to sign in directly
         if response.user:
             st.session_state.user_id = response.user.id
