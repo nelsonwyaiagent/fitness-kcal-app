@@ -14,56 +14,6 @@ except:
     os.system("pip install openai")
     from openai import OpenAI
 
-def create_kcal_rings(eaten: int, burned: int, target: int):
-    """Create progress indicator for kcal"""
-    from plotly import graph_objects as go
-    
-    # Net calories
-    net = eaten - burned
-    remaining = max(0, target - net)
-    over = max(0, net - target)
-    
-    # Simple gauge
-    fig = go.Figure()
-    
-    # Remaining bar (background)
-    fig.add_trace(go.Bar(
-        x=[remaining],
-        y=['Remaining'],
-        orientation='h',
-        marker=dict(color='#10b981'),
-        name='Remaining'
-    ))
-    
-    # Eaten bar
-    fig.add_trace(go.Bar(
-        x=[eaten],
-        y=['Eaten'],
-        orientation='h',
-        marker=dict(color='#f59e0b'),
-        name='Eaten'
-    ))
-    
-    # Burned bar
-    if burned > 0:
-        fig.add_trace(go.Bar(
-            x=[burned],
-            y=['Burned'],
-            orientation='h',
-            marker=dict(color='#3b82f6'),
-            name='Burned'
-        ))
-    
-    fig.update_layout(
-        barmode='grouped',
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.1),
-        height=200,
-        xaxis=dict(title="kcal"),
-        yaxis=dict(autorange="reversed")
-    )
-    
-    return fig
 
 
 # Page config
@@ -275,8 +225,11 @@ else:
         col3.metric("Target", f"{target} kcal")
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
         # Concentric rings visualization
-        fig = create_kcal_rings(eaten, burned, target)
-        st.plotly_chart(fig, use_container_width=True)
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Eaten", f"{eaten}")
+        col2.metric("Burned", f"{burned}")
+        col3.metric("Target", f"{target}")
+        col4.metric("Remaining", f"{remaining}", delta=remaining)
         st.metric("Steps", f"{health.get('steps', 0):,}")
         st.subheader("📋 Today's Timeline")
         events = []
