@@ -116,7 +116,7 @@ def analyze_text_meal(description: str) -> dict:
         )
         response = client.chat.completions.create(
             model="MiniMax-M3",
-            messages=[{"role": "user", "content": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat.", "kcal": 350, "protein": 20, "carbs": 40, "fat": 12}}"}],
+            messages=[{"role": "user", "content": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat."}],
             max_tokens=300
         )
         content = response.choices[0].message.content
