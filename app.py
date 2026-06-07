@@ -2,6 +2,7 @@ import streamlit as st
 import supabase
 import requests
 import json
+import re
 import os
 from datetime import datetime, timedelta
 from plotly import graph_objects as go
@@ -114,9 +115,15 @@ def analyze_text_meal(description: str) -> dict:
             api_key=os.environ.get("MINIMAX_API_KEY", ""),
             base_url="https://api.minimax.io/v1"
         )
+        prompt = (
+            f"Analyze meal: {description}. "
+            "Return ONLY a valid JSON object with keys: description, kcal, protein, carbs, fat. "
+            "The values for kcal, protein, carbs, and fat MUST be pure numbers (integers) without any units or text. "
+            "Do not use markdown formatting."
+        )
         response = client.chat.completions.create(
             model="MiniMax-M3",
-            messages=[{"role": "user", "content": f"Analyze meal: {description}. Return ONLY JSON with keys: description,kcal,protein,carbs,fat. No markdown."}],
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=300
         )
         content = response.choices[0].message.content
@@ -124,18 +131,19 @@ def analyze_text_meal(description: str) -> dict:
         # Try multiple parsing approaches
         try:
             # Try finding JSON with any format
-            json_match = re.search(r'\{.+\}', content, re.DOTALL)
+            json_match = re.search(r'\{[\s\S]*\}', content)
             if json_match:
                 result_str = json_match.group()
                 # Replace single quotes with double quotes for JSON
                 result_str = result_str.replace("'", '"')
                 result = json.loads(result_str)
                 return {
-                    "description": result.get("description", description),
-                    "kcal": int(result.get("kcal", 0)),
-                    "protein": int(result.get("protein", 0)),
-                    "carbs": int(result.get("carbs", 0)),
-                    "fat": int(result.get("fat", 0))
+                  "description": result.get("description", description),
+                  # Using a helper to strip out any accidental text/units before converting to int
+                  "kcal": int(re.sub(r'[^\d]', '', str(result.get("kcal", 0))) or 0),
+                  "protein": int(re.sub(r'[^\d]', '', str(result.get("protein", 0))) or 0),
+                  "carbs": int(re.sub(r'[^\d]', '', str(result.get("carbs", 0))) or 0),
+                  "fat": int(re.sub(r'[^\d]', '', str(result.get("fat", 0))) or 0)
                 }
         except Exception as e:
             st.write(f"Parse error: {e}")
