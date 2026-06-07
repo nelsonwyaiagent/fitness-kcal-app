@@ -156,7 +156,8 @@ def analyze_text_meal(description: str) -> dict:
             st.error(f"Parse error: {e}") 
         
         return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
-    except:
+        
+    except Exception as e:  # <--- FIX: Changed "except:" to "except Exception as e:"
         # ==========================================
         # DEBUGGING: CATCH API/CONNECTION ERRORS
         # ==========================================
