@@ -131,7 +131,7 @@ def analyze_text_meal(description: str) -> dict:
         # ==========================================
         # DEBUGGING: SHOW RAW LLM OUTPUT IN THE APP
         # ==========================================
-        st.info(f"**Raw LLM Output:**\n\n{content}")
+        # st.info(f"**Raw LLM Output:**\n\n{content}")
         
         import re
         # Try multiple parsing approaches
