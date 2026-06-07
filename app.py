@@ -222,8 +222,8 @@ else:
                     st.json(result)
                     kcal = st.number_input("Calories", min_value=0, value=int(result.get("kcal", 0)))
                     protein = st.number_input("Protein (g)", min_value=0, value=int(result.get("protein", 0)))
-                    carbs = st.number_input("Carbs (g)", min_value=0, value=int(result.get("carbs", 0))))
-                    fat = st.number_input("Fat (g)", min_value=0, value=int(result.get("fat", 0))))
+                    carbs = st.number_input("Carbs (g)", min_value=0, value=int(result.get("carbs", 0)))
+                    fat = st.number_input("Fat (g)", min_value=0, value=int(result.get("fat", 0)))
                 else:
                     kcal = st.number_input("Calories", min_value=0, value=0)
                     protein = st.number_input("Protein (g)", min_value=0, value=0)
