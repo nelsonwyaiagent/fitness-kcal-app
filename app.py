@@ -15,72 +15,52 @@ except:
     from openai import OpenAI
 
 def create_kcal_rings(eaten: int, burned: int, target: int):
-    """Create gauge arcs for kcal display"""
+    """Create progress indicator for kcal"""
     from plotly import graph_objects as go
     
-    # Calculate angles (0-360 degrees)
-    total = target + burned if burned > 0 else target
-    eaten_pct = (eaten / total * 360) if total > 0 else 0
-    burned_pct = (burned / total * 360) if total > 0 else 0
+    # Net calories
+    net = eaten - burned
+    remaining = max(0, target - net)
+    over = max(0, net - target)
     
-    # Inner ring: Eaten (arc)
-    # Start at -90 (top), sweep eaten_pct degrees
-    eaten_theta_start = -90
-    eaten_theta_end = eaten_theta_start + eaten_pct
-    
-    # Outer ring: Remaining + Burned (arcs)
-    remaining = max(0, target - eaten + burned)
-    remaining_pct = (remaining / total * 360) if total > 0 else 0
-    
+    # Simple gauge
     fig = go.Figure()
     
-    # Inner arc (Eaten) - amber
-    fig.add_trace(go.Barpolar(
-        r=[1, 1],
-        theta=[eaten_theta_start, eaten_theta_end],
-        marker=dict(color=['#f59e0b']),
-        name='Eaten',
-        baseangle=0,
-        hole=0.6
+    # Remaining bar (background)
+    fig.add_trace(go.Bar(
+        x=[remaining],
+        y=['Remaining'],
+        orientation='h',
+        marker=dict(color='#10b981'),
+        name='Remaining'
     ))
     
-    # Outer arcs
+    # Eaten bar
+    fig.add_trace(go.Bar(
+        x=[eaten],
+        y=['Eaten'],
+        orientation='h',
+        marker=dict(color='#f59e0b'),
+        name='Eaten'
+    ))
+    
+    # Burned bar
     if burned > 0:
-        # Remaining (green)
-        fig.add_trace(go.Barpolar(
-            r=[2, 2],
-            theta=[eaten_theta_end, eaten_theta_end + remaining_pct],
-            marker=dict(color=['#10b981']),
-            name='Remaining',
-            baseangle=0
-        ))
-        # Burned (blue)
-        fig.add_trace(go.Barpolar(
-            r=[2, 2],
-            theta=[eaten_theta_end + remaining_pct, eaten_theta_end + remaining_pct + burned_pct],
-            marker=dict(color=['#3b82f6']),
-            name='Burned',
-            baseangle=0
-        ))
-    else:
-        # Just remaining
-        fig.add_trace(go.Barpolar(
-            r=[2, 2],
-            theta=[eaten_theta_end, eaten_theta_end + remaining_pct],
-            marker=dict(color=['#10b981']),
-            name='Remaining',
-            baseangle=0
+        fig.add_trace(go.Bar(
+            x=[burned],
+            y=['Burned'],
+            orientation='h',
+            marker=dict(color='#3b82f6'),
+            name='Burned'
         ))
     
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=False, range=[0, 3]),
-            angularaxis=dict(visible=False, direction="clockwise", startangle=-90)
-        ),
+        barmode='grouped',
         showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5),
-        margin=dict(t=30, b=30, l=30, r=30),
-        height=350
+        legend=dict(orientation="h", yanchor="bottom", y=-0.1),
+        height=200,
+        xaxis=dict(title="kcal"),
+        yaxis=dict(autorange="reversed")
     )
     
     return fig
