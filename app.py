@@ -121,8 +121,26 @@ def analyze_text_meal(description: str) -> dict:
         )
         content = response.choices[0].message.content
         import re
-        json_match = re.search(r'\{[\s\S]*\}', content)
-        return json.loads(json_match.group()) if json_match else {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
+        # Try multiple parsing approaches
+        try:
+            # Try finding JSON with any format
+            json_match = re.search(r'\{[^}]+\}', content)
+            if json_match:
+                result_str = json_match.group()
+                # Replace single quotes with double quotes for JSON
+                result_str = result_str.replace("'", '"')
+                result = json.loads(result_str)
+                return {
+                    "description": result.get("description", description),
+                    "kcal": int(result.get("kcal", 0)),
+                    "protein": int(result.get("protein", 0)),
+                    "carbs": int(result.get("carbs", 0)),
+                    "fat": int(result.get("fat", 0))
+                }
+        except Exception as e:
+            st.write(f"Parse error: {e}")
+        
+        return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
     except:
         return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
 
