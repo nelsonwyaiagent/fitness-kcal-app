@@ -14,6 +14,56 @@ except:
     os.system("pip install openai")
     from openai import OpenAI
 
+def create_kcal_rings(eaten: int, burned: int, target: int):
+    """Create concentric donut rings for kcal display"""
+    from plotly import graph_objects as go
+    
+    # Calculate values
+    remaining = max(0, target - eaten + burned)
+    
+    # Inner ring (Eaten) - full circle
+    inner_values = [eaten]
+    
+    # Outer ring - split into remaining and burned
+    outer_values = [remaining, burned]
+    outer_colors = ['#10b981', '#3b82f6']  # green for remaining, blue for burned
+    
+    fig = go.Figure()
+    
+    # Outer ring (background + burned)
+    fig.add_trace(go.Barpolar(
+        r=outer_values,
+        theta=[0, 0],
+        marker=dict(color=outer_colors),
+        name='Budget',
+        baseangle=0,
+        opacity=0.7
+    ))
+    
+    # Inner ring (eaten) - overlay
+    fig.add_trace(go.Barpolar(
+        r=[eaten],
+        theta=[180],
+        marker=dict(color=['#f59e0b']),  # amber for eaten
+        name='Eaten',
+        baseangle=180,
+        hole=0.6
+    ))
+    
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(visible=False),
+            angularaxis=dict(visible=False)
+        ),
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.1, xanchor="center", x=0.5),
+        margin=dict(t=20, b=20, l=20, r=20),
+        height=300
+    )
+    
+    return fig
+
+
 # Page config
 st.set_page_config(page_title="Fitness Kcal App", page_icon="💪", layout="wide")
 
@@ -222,8 +272,9 @@ else:
         col2.metric("Burned", f"{burned} kcal")
         col3.metric("Target", f"{target} kcal")
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
-        progress = max(0, min((eaten - burned) / target, 1.0)) if target > 0 else 0
-        st.progress(progress)
+        # Concentric rings visualization
+        fig = create_kcal_rings(eaten, burned, target)
+        st.plotly_chart(fig, use_container_width=True)
         st.metric("Steps", f"{health.get('steps', 0):,}")
         st.subheader("📋 Today's Timeline")
         events = []
