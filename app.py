@@ -149,7 +149,7 @@ else:
         col2.metric("Burned", f"{burned} kcal")
         col3.metric("Target", f"{target} kcal")
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
-        progress = min((eaten - burned) / target, 1.0) if target > 0 else 0
+        progress = max(0, min((eaten - burned) / target, 1.0)) if target > 0 else 0
         st.progress(progress)
         st.metric("Steps", f"{health.get('steps', 0):,}")
         st.subheader("📋 Today's Timeline")
