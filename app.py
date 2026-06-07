@@ -116,7 +116,7 @@ def analyze_meal_image(image_bytes: bytes) -> dict:
             base_url="https://api.minimax.io/v1"
         )
         response = client.chat.completions.create(
-            model="MiniMax-M2.7",
+            model="MiniMax-M3",
             messages=[{"role": "user", "content": [
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
                 {"type": "text", "text": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat. No markdown."}
@@ -254,7 +254,7 @@ else:
                     base_url="https://api.minimax.io/v1"
                 )
                 ai_response = client.chat.completions.create(
-                    model="MiniMax-M2.7",
+                    model="MiniMax-M3",
                     messages=[
                         {"role": "system", "content": "You are a helpful fitness coach. Give practical advice about meals, workouts, and nutrition."},
                         {"role": "user", "content": f"User data: {eaten} kcal eaten, {burned} burned, target {target} kcal. Question: {query}"}
