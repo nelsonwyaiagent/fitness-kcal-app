@@ -127,6 +127,12 @@ def analyze_text_meal(description: str) -> dict:
             max_tokens=300
         )
         content = response.choices[0].message.content
+
+        # ==========================================
+        # DEBUGGING: SHOW RAW LLM OUTPUT IN THE APP
+        # ==========================================
+        st.info(f"**Raw LLM Output:**\n\n{content}")
+        
         import re
         # Try multiple parsing approaches
         try:
@@ -146,10 +152,15 @@ def analyze_text_meal(description: str) -> dict:
                   "fat": int(re.sub(r'[^\d]', '', str(result.get("fat", 0))) or 0)
                 }
         except Exception as e:
-            st.write(f"Parse error: {e}")
+            # Changed to st.error so it highlights in red on your screen
+            st.error(f"Parse error: {e}") 
         
         return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
     except:
+        # ==========================================
+        # DEBUGGING: CATCH API/CONNECTION ERRORS
+        # ==========================================
+        st.error(f"API or Connection Error: {e}")
         return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
 
 def analyze_meal_image(image_bytes: bytes) -> dict:
