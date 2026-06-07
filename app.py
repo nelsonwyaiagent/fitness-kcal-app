@@ -124,7 +124,7 @@ def analyze_text_meal(description: str) -> dict:
         response = client.chat.completions.create(
             model="MiniMax-M3",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=300
+            max_tokens=800
         )
         content = response.choices[0].message.content
 
@@ -178,7 +178,7 @@ def analyze_meal_image(image_bytes: bytes) -> dict:
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
                 {"type": "text", "text": "Analyze this meal. Return ONLY JSON with: description, kcal, protein, carbs, fat. No markdown."}
             ]}],
-            max_tokens=500
+            max_tokens=800
         )
         content = response.choices[0].message.content
         import re
