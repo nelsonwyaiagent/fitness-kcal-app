@@ -107,6 +107,25 @@ def get_weekly_data():
         days.append({"date": date, "day": (datetime.now() - timedelta(days=i)).strftime("%a"), "eaten": eaten, "burned": burned, "net": eaten - burned})
     return days
 
+def analyze_text_meal(description: str) -> dict:
+    try:
+        from openai import OpenAI
+        client = OpenAI(
+            api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+            base_url="https://api.minimax.io/v1"
+        )
+        response = client.chat.completions.create(
+            model="MiniMax-M3",
+            messages=[{"role": "user", "content": f"Analyze this meal: {description}. Return ONLY JSON with: description, kcal, protein, carbs, fat. Example: {{"description": "{description}", "kcal": 350, "protein": 20, "carbs": 40, "fat": 12}}"}],
+            max_tokens=300
+        )
+        content = response.choices[0].message.content
+        import re
+        json_match = re.search(r'\{[\s\S]*\}', content)
+        return json.loads(json_match.group()) if json_match else {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
+    except:
+        return {"description": description, "kcal": 0, "protein": 0, "carbs": 0, "fat": 0}
+
 def analyze_meal_image(image_bytes: bytes) -> dict:
     import base64
     image_b64 = base64.b64encode(image_bytes).decode()
