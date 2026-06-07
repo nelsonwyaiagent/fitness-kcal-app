@@ -267,7 +267,7 @@ else:
         col3.metric("Target", f"{target} kcal")
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
         # Concentric rings visualization
-        st.pyplot(create_stacked_bar(eaten, burned, target), use_container_width=True)
+        st.plotly_chart(create_stacked_bar(eaten, burned, target), use_container_width=True)
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten}")
         col2.metric("Burned", f"{burned}")
