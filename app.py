@@ -293,7 +293,10 @@ else:
             events.append((w["timestamp"], f"🏃 {w['activity_type']}", -w["kcal_burned"]))
         events.sort(key=lambda x: x[0], reverse=True)
         for ts, desc, kcal in events[:10]:
-            st.write(f"{desc}: {'+' if kcal > 0 else ''}{kcal} kcal")
+            col1, col2 = st.columns([5, 1])
+            col1.write(f"{desc}: {'+' if kcal > 0 else ''}{kcal} kcal")
+            if col2.button("🗑️", key=f"del_{ts}"):
+                st.warning("Delete feature coming soon!")
         if not events:
             st.info("No meals or workouts logged today.")
         st.subheader("➕ Quick Add")
