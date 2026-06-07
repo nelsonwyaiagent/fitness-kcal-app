@@ -201,14 +201,38 @@ else:
         tab1, tab2 = st.tabs(["🍽️ Meal", "🏃 Workout"])
         with tab1:
             with st.form("add_meal"):
-                desc = st.text_input("Description")
-                kcal = st.number_input("Calories", min_value=0, value=0)
-                protein = st.number_input("Protein (g)", min_value=0, value=0)
-                carbs = st.number_input("Carbs (g)", min_value=0, value=0)
-                fat = st.number_input("Fat (g)", min_value=0, value=0)
+                desc = st.text_input("Description (e.g., 2 eggs with toast)")
                 meal_type = st.selectbox("Type", ["breakfast", "lunch", "dinner", "snack"])
+                
+                # Initialize text result
+                if "text_meal_result" not in st.session_state:
+                    st.session_state.text_meal_result = None
+                
+                # Analyze button
+                if st.form_submit_button("🤖 AI: Estimate Nutrition"):
+                    if desc:
+                        with st.spinner("Analyzing..."):
+                            result = analyze_text_meal(desc)
+                            st.session_state.text_meal_result = result
+                
+                # Show result if available
+                if st.session_state.text_meal_result:
+                    result = st.session_state.text_meal_result
+                    st.success("✅ Analysis complete!")
+                    st.json(result)
+                    kcal = st.number_input("Calories", min_value=0, value=int(result.get("kcal", 0)))
+                    protein = st.number_input("Protein (g)", min_value=0, value=int(result.get("protein", 0)))
+                    carbs = st.number_input("Carbs (g)", min_value=0, value=int(result.get("carbs", 0))))
+                    fat = st.number_input("Fat (g)", min_value=0, value=int(result.get("fat", 0))))
+                else:
+                    kcal = st.number_input("Calories", min_value=0, value=0)
+                    protein = st.number_input("Protein (g)", min_value=0, value=0)
+                    carbs = st.number_input("Carbs (g)", min_value=0, value=0)
+                    fat = st.number_input("Fat (g)", min_value=0, value=0)
+                
                 if st.form_submit_button("Add Meal"):
                     supabase.table("meals").insert({"user_id": st.session_state.user_id, "description": desc, "kcal": kcal, "protein_grams": protein, "carbs_grams": carbs, "fat_grams": fat, "meal_type": meal_type}).execute()
+                    st.session_state.text_meal_result = None
                     st.success("Meal added!")
                     st.rerun()
             st.write("---")
