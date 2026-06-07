@@ -17,6 +17,48 @@ except:
 
 
 # Page config
+def create_stacked_bar(eaten: int, burned: int, target: int):
+    """Horizontal stacked bar chart"""
+    from plotly import graph_objects as go
+    
+    remaining = max(0, target - eaten + burned)
+    
+    fig = go.Figure()
+    
+    # Remaining (green)
+    fig.add_trace(go.Bar(
+        x=[remaining], y=['Budget'],
+        orientation='h', marker=dict(color='#10b981'),
+        name='Remaining'
+    ))
+    
+    # Burned (blue)
+    if burned > 0:
+        fig.add_trace(go.Bar(
+            x=[burned], y=['Budget'],
+            orientation='h', marker=dict(color='#3b82f6'),
+            name='Burned'
+        ))
+    
+    # Eaten (amber)
+    fig.add_trace(go.Bar(
+        x=[eaten], y=['Budget'],
+        orientation='h', marker=dict(color='#f59e0b'),
+        name='Eaten'
+    ))
+    
+    fig.update_layout(
+        barmode='stack',
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+        height=150,
+        xaxis=dict(title="kcal"),
+        margin=dict(l=20, r=20, t=20, b=40)
+    )
+    return fig
+
+
+
 st.set_page_config(page_title="Fitness Kcal App", page_icon="💪", layout="wide")
 
 # Supabase client
@@ -225,11 +267,12 @@ else:
         col3.metric("Target", f"{target} kcal")
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
         # Concentric rings visualization
+        st.pyplot(create_stacked_bar(eaten, burned, target), use_container_width=True)
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten}")
         col2.metric("Burned", f"{burned}")
         col3.metric("Target", f"{target}")
-        col4.metric("Remaining", f"{remaining}", delta=remaining)
+        col4.metric("Remaining", f"{remaining}")
         st.metric("Steps", f"{health.get('steps', 0):,}")
         st.subheader("📋 Today's Timeline")
         events = []
