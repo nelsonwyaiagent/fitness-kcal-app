@@ -124,7 +124,7 @@ def analyze_text_meal(description: str) -> dict:
         # Try multiple parsing approaches
         try:
             # Try finding JSON with any format
-            json_match = re.search(r'\{[^}]+\}', content)
+            json_match = re.search(r'\{.+\}', content, re.DOTALL)
             if json_match:
                 result_str = json_match.group()
                 # Replace single quotes with double quotes for JSON
