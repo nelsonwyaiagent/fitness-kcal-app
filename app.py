@@ -194,16 +194,50 @@ else:
                     st.rerun()
             st.write("---")
             st.write("📸 **AI Photo Analysis**")
-            uploaded = st.file_uploader("Upload meal photo", type=["jpg", "jpeg", "png"])
-            if uploaded and st.button("Analyze with AI"):
-                with st.spinner("Analyzing..."):
-                    result = analyze_meal_image(uploaded.read())
-                    if result:
-                        st.json(result)
-                        if st.button("Save this meal"):
-                            supabase.table("meals").insert({"user_id": st.session_state.user_id, "description": result.get("description", "AI meal"), "kcal": result.get("kcal", 0), "protein_grams": result.get("protein", 0), "carbs_grams": result.get("carbs", 0), "fat_grams": result.get("fat", 0), "source": "ai_vision"}).execute()
-                            st.success("Saved!")
+            uploaded = st.file_uploader("Upload meal photo", type=["jpg", "jpeg", "png"], key="meal_photo")
+            
+            # Initialize AI result in session state
+            if "ai_meal_result" not in st.session_state:
+                st.session_state.ai_meal_result = None
+            
+            # Show uploaded photo
+            if uploaded:
+                st.image(uploaded, width=200)
+                
+                if st.button("Analyze with AI", key="analyze_btn"):
+                    with st.spinner("Analyzing..."):
+                        result = analyze_meal_image(uploaded.read())
+                        if result:
+                            st.session_state.ai_meal_result = result
                             st.rerun()
+            
+            # Auto-fill form with AI result
+            if st.session_state.ai_meal_result:
+                result = st.session_state.ai_meal_result
+                st.success("✅ Analysis complete!")
+                st.json(result)
+                
+                with st.form("add_ai_meal"):
+                    desc = st.text_input("Description", value=result.get("description", ""))
+                    kcal = st.number_input("Calories", min_value=0, value=result.get("kcal", 0))
+                    protein = st.number_input("Protein (g)", min_value=0, value=int(result.get("protein", 0)))
+                    carbs = st.number_input("Carbs (g)", min_value=0, value=int(result.get("carbs", 0)))
+                    fat = st.number_input("Fat (g)", min_value=0, value=int(result.get("fat", 0)))
+                    meal_type = st.selectbox("Type", ["breakfast", "lunch", "dinner", "snack"], index=["breakfast", "lunch", "dinner", "snack"].index(result.get("meal_type", "lunch")) if result.get("meal_type") in ["breakfast", "lunch", "dinner", "snack"] else 1)
+                    
+                    col1, col2 = st.columns(2)
+                    save_btn = col1.form_submit_button("Add Meal")
+                    clear_btn = col2.form_submit_button("Clear")
+                    
+                    if save_btn:
+                        supabase.table("meals").insert({"user_id": st.session_state.user_id, "description": desc, "kcal": kcal, "protein_grams": protein, "carbs_grams": carbs, "fat_grams": fat, "meal_type": meal_type, "source": "ai_vision"}).execute()
+                        st.success("Meal saved!")
+                        st.session_state.ai_meal_result = None
+                        st.rerun()
+                    
+                    if clear_btn:
+                        st.session_state.ai_meal_result = None
+                        st.rerun()
         with tab2:
             with st.form("add_workout"):
                 activity = st.text_input("Activity")
