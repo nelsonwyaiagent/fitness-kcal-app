@@ -246,12 +246,30 @@ else:
             target = 2000
             remaining = target - (eaten - burned)
             query_lower = query.lower()
-            if "how am i" in query_lower or "progress" in query_lower:
-                response = f"You're {abs(remaining)} kcal under/over your target. {eaten} eaten, {burned} burned."
-            elif "log" in query_lower or "add" in query_lower:
-                response = "Use the Today page to log meals and workouts!"
-            else:
-                response = "I'm here to help! Ask about your progress."
+            # Use MiniMax for AI responses
+            try:
+                from openai import OpenAI
+                client = OpenAI(
+                    api_key=st.secrets.get("MINIMAX_API_KEY", ""),
+                    base_url="https://api.minimax.io/v1"
+                )
+                ai_response = client.chat.completions.create(
+                    model="MiniMax-M2.7",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful fitness coach. Give practical advice about meals, workouts, and nutrition."},
+                        {"role": "user", "content": f"User data: {eaten} kcal eaten, {burned} burned, target {target} kcal. Question: {query}"}
+                    ],
+                    max_tokens=300
+                )
+                response = ai_response.choices[0].message.content
+            except Exception as e:
+                # Fallback to simple responses
+                if "how am i" in query_lower or "progress" in query_lower:
+                    response = f"You're {abs(remaining)} kcal under/over your target. {eaten} eaten, {burned} burned."
+                elif "log" in query_lower or "add" in query_lower:
+                    response = "Use the Today page to log meals and workouts!"
+                else:
+                    response = "I'm here to help! Ask about your progress."
             with st.chat_message("assistant"):
                 st.write(response)
             st.session_state.chat_history.append(("assistant", response))
