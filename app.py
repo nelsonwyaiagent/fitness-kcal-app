@@ -51,11 +51,12 @@ def sign_in(email: str, password: str):
 
 def sign_up(email: str, password: str):
     try:
-        response = supabase.auth.sign_up(email, password)
+        response = supabase.auth.sign_up({"email": email, "password": password})
         return response.user
     except Exception as e:
         st.error(f"Error: {e}")
         return None
+
 
 def get_user_data():
     if not st.session_state.user_id:
