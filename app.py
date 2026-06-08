@@ -314,7 +314,7 @@ else:
         remaining = target - (eaten - burned)
         fig_line = create_line_chart(meals, workouts, target)
         if fig_line:
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, key="line_chart", use_container_width=True)
         
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten} kcal")
@@ -325,7 +325,7 @@ else:
         st.plotly_chart(create_stacked_bar(eaten, burned, target), use_container_width=True)
         fig_line = create_line_chart(meals, workouts, target)
         if fig_line:
-            st.plotly_chart(fig_line, use_container_width=True)
+            st.plotly_chart(fig_line, key="line_chart", use_container_width=True)
         
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten}")
