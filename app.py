@@ -17,6 +17,57 @@ except:
 
 
 # Page config
+def create_line_chart(meals, workouts, target):
+    """Line chart showing cumulative eaten kcal over time"""
+    from plotly import graph_objects as go
+    from datetime import datetime
+    
+    if not meals:
+        return None
+    
+    # Get today's hours (0-23)
+    hours = list(range(24))
+    cumulative = []
+    total = 0
+    
+    for hour in hours:
+        # Sum meals up to this hour
+        for m in meals:
+            meal_hour = int(m.get('timestamp', '0').split('T')[1].split(':')[0]) if 'T' in str(m.get('timestamp')) else 0
+            if meal_hour <= hour:
+                total += m.get('kcal', 0)
+        cumulative.append(total)
+    
+    # Threshold: target + burned
+    burned = sum(w.get('kcal_burned', 0) for w in workouts)
+    threshold = target + burned
+    
+    fig = go.Figure()
+    
+    # Line chart
+    fig.add_trace(go.Scatter(
+        x=hours, y=cumulative,
+        mode='lines+markers',
+        marker=dict(color='#f59e0b'),
+        line=dict(color='#f59e0b', width=2),
+        name='Eaten'
+    ))
+    
+    # Threshold line
+    fig.add_hline(y=threshold, line_dash='dash', line_color='red', annotation_text=f'Threshold: {threshold}')
+    
+    fig.update_layout(
+        xaxis=dict(title='Hour', tickmode='linear', tick0=0, dtick=2),
+        yaxis=dict(title='kcal'),
+        height=250,
+        showlegend=True,
+        margin=dict(l=40, r=40, t=20, b=40)
+    )
+    
+    return fig
+
+
+
 def create_stacked_bar(eaten: int, burned: int, target: int):
     """Horizontal stacked bar chart"""
     from plotly import graph_objects as go
@@ -261,6 +312,10 @@ else:
         burned = sum(w.get("kcal_burned", 0) for w in workouts) + health.get("active_energy_kcal", 0)
         target = plan.get("daily_kcal_target", 2000) if plan else 2000
         remaining = target - (eaten - burned)
+        fig_line = create_line_chart(meals, workouts, target)
+        if fig_line:
+            st.plotly_chart(fig_line, use_container_width=True)
+        
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten} kcal")
         col2.metric("Burned", f"{burned} kcal")
@@ -268,6 +323,10 @@ else:
         col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
         # Concentric rings visualization
         st.plotly_chart(create_stacked_bar(eaten, burned, target), use_container_width=True)
+        fig_line = create_line_chart(meals, workouts, target)
+        if fig_line:
+            st.plotly_chart(fig_line, use_container_width=True)
+        
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten}")
         col2.metric("Burned", f"{burned}")
