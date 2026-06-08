@@ -317,17 +317,6 @@ else:
             st.plotly_chart(fig_line, key="line_chart", use_container_width=True)
         
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Eaten", f"{eaten} kcal")
-        col2.metric("Burned", f"{burned} kcal")
-        col3.metric("Target", f"{target} kcal")
-        col4.metric("Remaining", f"{remaining} kcal", delta=remaining)
-        # Concentric rings visualization
-        st.plotly_chart(create_stacked_bar(eaten, burned, target), use_container_width=True)
-        fig_line = create_line_chart(meals, workouts, target)
-        if fig_line:
-            st.plotly_chart(fig_line, key="line_chart", use_container_width=True)
-        
-        col1, col2, col3, col4 = st.columns(4)
         col1.metric("Eaten", f"{eaten}")
         col2.metric("Burned", f"{burned}")
         col3.metric("Target", f"{target}")
