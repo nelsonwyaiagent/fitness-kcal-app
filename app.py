@@ -18,24 +18,21 @@ except:
 
 # Page config
 def create_line_chart(meals, workouts, target):
-    """Line chart showing cumulative eaten kcal over time"""
+    """Line chart showing eaten kcal by meal type"""
     from plotly import graph_objects as go
-    from datetime import datetime
     
     if not meals:
         return None
     
-    # Get today's hours (0-23)
-    hours = list(range(24))
+    # Order for meal types
+    meal_order = ['breakfast', 'lunch', 'snack', 'happy hour', 'dinner']
+    meal_labels = ['Breakfast', 'Lunch', 'Snack', 'Happy Hour', 'Dinner']
+    
+    # Calculate cumulative by meal type
     cumulative = []
     total = 0
-    
-    for hour in hours:
-        # Sum meals up to this hour
-        for m in meals:
-            meal_hour = int(m.get('timestamp', '0').split('T')[1].split(':')[0]) if 'T' in str(m.get('timestamp')) else 0
-            if meal_hour <= hour:
-                total += m.get('kcal', 0)
+    for mt in meal_order:
+        total += sum(m.get('kcal', 0) for m in meals if m.get('meal_type') == mt)
         cumulative.append(total)
     
     # Threshold: target + burned
@@ -46,18 +43,18 @@ def create_line_chart(meals, workouts, target):
     
     # Line chart
     fig.add_trace(go.Scatter(
-        x=hours, y=cumulative,
+        x=meal_labels, y=cumulative,
         mode='lines+markers',
-        marker=dict(color='#f59e0b'),
+        marker=dict(color='#f59e0b', size=10),
         line=dict(color='#f59e0b', width=2),
         name='Eaten'
     ))
     
     # Threshold line
-    fig.add_hline(y=threshold, line_dash='dash', line_color='red', annotation_text=f'Threshold: {threshold}')
+    fig.add_hline(y=threshold, line_dash='dash', line_color='red', annotation_text=f'Target: {threshold}')
     
     fig.update_layout(
-        xaxis=dict(title='Hour', tickmode='linear', tick0=0, dtick=2),
+        xaxis=dict(title='Meal'),
         yaxis=dict(title='kcal'),
         height=250,
         showlegend=True,
