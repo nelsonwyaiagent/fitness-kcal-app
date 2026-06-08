@@ -21,37 +21,44 @@ def create_line_chart(meals, workouts, target):
     """Line chart showing eaten kcal by meal type"""
     from plotly import graph_objects as go
     
-    if not meals:
-        return None
-    
     # Order for meal types
     meal_order = ['breakfast', 'lunch', 'snack', 'happy hour', 'dinner']
     meal_labels = ['Breakfast', 'Lunch', 'Snack', 'Happy Hour', 'Dinner']
     
-    # Calculate cumulative by meal type
-    cumulative = []
+    # Calculate cumulative by meal type (only for existing meals)
+    x_data = []
+    y_data = []
     total = 0
-    for mt in meal_order:
-        total += sum(m.get('kcal', 0) for m in meals if m.get('meal_type') == mt)
-        cumulative.append(total)
+    for i, mt in enumerate(meal_order):
+        kcal = sum(m.get('kcal', 0) for m in meals if m.get('meal_type') == mt)
+        if kcal > 0:
+            total += kcal
+            x_data.append(meal_labels[i])
+            y_data.append(total)
+    
+    if not x_data:
+        return None
     
     # Threshold: target + burned
     burned = sum(w.get('kcal_burned', 0) for w in workouts)
-    threshold = target + burned
+    threshold_with_burned = target + burned
     
     fig = go.Figure()
     
-    # Line chart
+    # Line chart (only for existing meals)
     fig.add_trace(go.Scatter(
-        x=meal_labels, y=cumulative,
+        x=x_data, y=y_data,
         mode='lines+markers',
         marker=dict(color='#f59e0b', size=10),
         line=dict(color='#f59e0b', width=2),
         name='Eaten'
     ))
     
-    # Threshold line
-    fig.add_hline(y=threshold, line_dash='dash', line_color='red', annotation_text=f'Target: {threshold}')
+    # Target line (green)
+    fig.add_hline(y=target, line_dash='dot', line_color='#10b981', annotation_text=f'Target: {target}')
+    
+    # Target + Burned line (red)
+    fig.add_hline(y=threshold_with_burned, line_dash='dash', line_color='red', annotation_text=f'+Burned: {threshold_with_burned}')
     
     fig.update_layout(
         xaxis=dict(title='Meal'),
