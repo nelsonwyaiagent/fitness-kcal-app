@@ -446,7 +446,7 @@ else:
         fig = go.Figure()
         fig.add_trace(go.Bar(x=[d["day"] for d in weekly], y=[d["eaten"] for d in weekly], name="Eaten", marker_color="#10b981"))
         fig.add_trace(go.Bar(x=[d["day"] for d in weekly], y=[d["burned"] for d in weekly], name="Burned", marker_color="#3b82f6"))
-        fig.add_hline(y=target, line_dash="dash", line_color="emerald")
+        # fig.add_trace(go.Scatter(x=[0, 1], y=[target, target], mode="lines", line=dict(dash="dash", color="emerald"), name="Target"))  # Removed due to compatibility
         fig.update_layout(title="Weekly Calories", barmode="group")
         st.plotly_chart(fig, use_container_width=True)
         st.subheader("This Week")
