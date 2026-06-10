@@ -347,7 +347,7 @@ else:
         with tab1:
             with st.form("add_meal"):
                 desc = st.text_input("Description (e.g., 2 eggs with toast)")
-                meal_type = st.selectbox("Type", ["breakfast", "lunch", "dinner", "snack"])
+                meal_type = st.selectbox("Type", ["breakfast", "lunch", "dinner", "snack", "happy hour"])
                 
                 # Initialize text result
                 if "text_meal_result" not in st.session_state:
